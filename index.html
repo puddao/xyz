@@ -1,0 +1,816 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Will you be my Valentine</title>
+
+  <style>
+    @import url("https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap");
+
+    :root{
+      --bg:#fff2f6;
+      --ink:#2b1a22;
+
+      --win:#ffd7e6;
+      --win2:#ffc4db;
+      --pixel:#ff7ea9;
+
+      --shadow: 0 18px 50px rgba(0,0,0,.15);
+    }
+
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      color:var(--ink);
+      background: var(--bg);
+      overflow:hidden;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+    }
+
+    /* tiny heart wallpaper */
+    body::before{
+      content:"";
+      position:fixed;
+      inset:0;
+      pointer-events:none;
+      opacity:.55;
+      background:
+        radial-gradient(circle at 12px 10px, rgba(255,111,160,.9) 0 2px, transparent 3px) 0 0 / 46px 46px,
+        radial-gradient(circle at 24px 24px, rgba(255,157,187,.85) 0 2px, transparent 3px) 0 0 / 46px 46px,
+        radial-gradient(circle at 34px 12px, rgba(255,111,160,.65) 0 1.6px, transparent 2.6px) 0 0 / 46px 46px;
+      filter: blur(.1px);
+    }
+
+    .center{
+      position:relative;
+      width:min(720px, 92vw);
+      height:min(560px, 84vh);
+      margin:0 auto;
+      top:50%;
+      transform:translateY(-50%);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+    }
+
+    /* Stage 1: Envelope GIF landing */
+    .landing{
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      gap: 16px;
+      width: 100%;
+    }
+
+    .envelope-gif-btn{
+      border:0;
+      background: transparent;
+      padding:0;
+      cursor:pointer;
+      user-select:none;
+      filter: drop-shadow(0 14px 22px rgba(0,0,0,.14));
+      transition: transform .18s ease;
+    }
+    .envelope-gif-btn:hover{ transform: translateY(-2px) }
+    .envelope-gif-btn:active{ transform: translateY(-1px) scale(.99) }
+
+    .envelope-gif{
+      width:min(420px, 90vw);
+      height:auto;
+      display:block;
+      border-radius: 18px;
+    }
+
+    .landing-text{
+      font-family: "Press Start 2P", system-ui;
+      font-size: 12px;
+      text-align:center;
+      line-height: 1.6;
+      opacity:.9;
+      margin: 0;
+      padding: 0 18px;
+    }
+
+    /* Pixel window stage */
+    .card{
+      width:100%;
+      height:100%;
+      display:none;
+      align-items:center;
+      justify-content:center;
+      padding: 18px;
+    }
+    .card.show{ display:flex }
+
+    .pixel-window{
+      width:min(560px, 92vw);
+      background: linear-gradient(180deg, var(--win) 0%, var(--win2) 100%);
+      padding: 12px;
+      position:relative;
+
+      border: 4px solid var(--pixel);
+      box-shadow:
+        0 0 0 4px rgba(255,255,255,.85) inset,
+        0 0 0 10px rgba(255,126,169,.30) inset,
+        0 18px 50px rgba(0,0,0,.15);
+    }
+
+    .pixel-titlebar{
+      height: 44px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      padding: 0 12px;
+      background: rgba(255,255,255,.45);
+      border: 3px solid rgba(255,126,169,.45);
+      font-family: "Press Start 2P", system-ui;
+      font-size: 12px;
+      letter-spacing: .5px;
+    }
+
+    .title-left{
+      display:flex;
+      align-items:center;
+      gap: 10px;
+    }
+
+    .title-hearts{
+      display:flex;
+      gap: 8px;
+      align-items:center;
+      transform: translateY(1px);
+    }
+
+    .px-heart{
+      width: 14px;
+      height: 14px;
+      background: var(--pixel);
+      clip-path: polygon(
+        50% 92%,
+        10% 55%,
+        10% 30%,
+        25% 18%,
+        40% 18%,
+        50% 30%,
+        60% 18%,
+        75% 18%,
+        90% 30%,
+        90% 55%
+      );
+      box-shadow: 2px 2px 0 rgba(0,0,0,.12);
+    }
+
+    .title-right{
+      display:flex;
+      align-items:center;
+      gap: 10px;
+    }
+
+    .px-close{
+      width: 22px;
+      height: 22px;
+      font-family: "Press Start 2P", system-ui;
+      font-size: 12px;
+      line-height: 1;
+      border: 3px solid rgba(0,0,0,.35);
+      background: rgba(255,255,255,.7);
+      cursor:pointer;
+      box-shadow: 3px 3px 0 rgba(0,0,0,.12);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+    }
+
+    .px-close:active{
+      transform: translate(1px,1px);
+      box-shadow: 2px 2px 0 rgba(0,0,0,.12);
+    }
+
+    .pixel-body{
+        position:relative;            /* add */
+        margin-top: 12px;
+        border: 3px solid rgba(255,126,169,.45);
+        background: rgba(255,255,255,.55);
+        padding: 14px;
+        min-height: 420px; /* keeps the container height stable across phases */
+
+      }
+
+    #phaseAsk,
+    #phaseYes{
+      position: absolute;
+      inset: 14px;               /* match .pixel-body padding */
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      gap: 10px;
+      transition: opacity .45s ease, transform .45s ease;
+    }
+
+    /* default visible ask */
+    #phaseAsk{
+      opacity: 1;
+      transform: translateY(0);
+      pointer-events: auto;
+    }
+
+    /* hidden ask state */
+    #phaseAsk.hide{
+      opacity: 0;
+      transform: translateY(-6px);
+      pointer-events: none;
+    }
+
+    /* default hidden yes */
+    #phaseYes{
+      opacity: 0;
+      transform: translateY(10px);
+      pointer-events: none;
+    }
+
+    /* visible yes */
+    #phaseYes.show{
+      opacity: 1;
+      transform: translateY(0);
+      pointer-events: auto;
+    }
+
+    /* tighten spacing so final phase stays centered and doesn't push */
+    .gif-frame,
+    .gif-frame.final{
+      margin: 0 auto;
+    }
+
+
+    .question{
+      text-align:center;
+      font-family: "Press Start 2P", system-ui;
+      font-size: 12px;
+      line-height: 1.5;
+      margin: 0 0 12px;
+    }
+
+    .gif-frame{
+      margin: 0 auto 14px;
+      width:min(360px, 78vw);
+      height:min(260px, 34vh);
+      border: 4px solid rgba(255,126,169,.70);
+      background:
+        linear-gradient(45deg, rgba(255,255,255,.55) 25%, transparent 25% 50%, rgba(255,255,255,.55) 50% 75%, transparent 75%) 0 0/16px 16px,
+        rgba(255,198,219,.55);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      overflow:hidden;
+    }
+    .gif-frame img{
+      width:100%;
+      height:100%;
+      object-fit: contain;
+      image-rendering: pixelated;
+    }
+
+    .btn-area{
+      position:relative;
+      height: 64px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap: 16px;
+      padding: 6px 8px;
+    }
+
+    .px-action{
+      font-family: "Press Start 2P", system-ui;
+      font-size: 12px;
+      padding: 10px 14px;
+      border: 3px solid rgba(0,0,0,.30);
+      background: rgba(255,255,255,.70);
+      cursor:pointer;
+      box-shadow: 3px 3px 0 rgba(0,0,0,.10);
+      user-select:none;
+    }
+
+    .px-action:active{
+      transform: translate(1px, 1px);
+      box-shadow: 2px 2px 0 rgba(0,0,0,.10);
+    }
+
+    .yes{
+      background: rgba(255,126,169,.22);
+      border-color: rgba(255,126,169,.85);
+    }
+
+    .no{
+      position: relative; 
+      background: rgba(255,255,255,.75);
+      border-color: rgba(0,0,0,.28);
+      z-index: 2;
+    }
+
+    .phase2{
+      display:none;
+      text-align:center;
+      padding: 10px 10px 4px;
+    }
+    .phase2.show{ display:block }
+
+    .yay-title{
+      font-family: "Press Start 2P", system-ui;
+      font-size: 14px;
+      line-height: 1.6;
+      margin: 2px 0 4px;
+    }
+
+    .mini-heart{
+      width: 10px;
+      height: 10px;
+      background: var(--pixel);
+      margin: 6px auto 10px;
+      clip-path: polygon(
+        50% 92%,
+        10% 55%,
+        10% 30%,
+        25% 18%,
+        40% 18%,
+        50% 30%,
+        60% 18%,
+        75% 18%,
+        90% 30%,
+        90% 55%
+      );
+    }
+
+    .gif-frame.final{
+      width:min(330px, 76vw);
+      height:min(250px, 32vh);
+      margin-bottom: 10px;
+    }
+
+    .final-note{
+      font-family: "Press Start 2P", system-ui;
+      font-size: 10px;
+      line-height: 1.6;
+      margin: 2px 0 4px;
+      opacity:.9;
+    }
+
+    .pixel-window::after{
+      content:"";
+      position:absolute;
+      inset: 12px;                 /* stay inside the window border */
+      pointer-events:none;
+      border-radius: 2px;
+      background:
+        repeating-linear-gradient(
+          to bottom,
+          rgba(0,0,0,.08) 0px,
+          rgba(0,0,0,.08) 1px,
+          rgba(0,0,0,0) 3px,
+          rgba(0,0,0,0) 6px
+        );
+      opacity: .22;
+      mix-blend-mode: multiply;
+    }
+
+    .pixel-window::before{
+      content:"";
+      position:absolute;
+      inset: 0;
+      pointer-events:none;
+      background: radial-gradient(circle at 50% 40%, rgba(255,255,255,.08), rgba(0,0,0,.12));
+      opacity: .35;
+    }
+
+    /* Screen shake */
+    @keyframes px-shake{
+      0%{ transform: translate(0,0) }
+      15%{ transform: translate(-3px, 2px) }
+      30%{ transform: translate(3px, -2px) }
+      45%{ transform: translate(-2px, -2px) }
+      60%{ transform: translate(2px, 2px) }
+      75%{ transform: translate(-2px, 1px) }
+      100%{ transform: translate(0,0) }
+    }
+    .pixel-window.shake{
+      animation: px-shake .18s steps(2, end);
+    }
+
+    /* Blinking cursor after title */
+    .title-left .title-cursor{
+      display:inline-block;
+      width: 10px;
+      height: 12px;
+      margin-left: 6px;
+      background: rgba(0,0,0,.35);
+      transform: translateY(1px);
+      animation: px-blink 1s steps(2, end) infinite;
+    }
+    @keyframes px-blink{
+      0%, 49%{ opacity: 1 }
+      50%, 100%{ opacity: 0 }
+    }
+
+    /* Heart burst particles */
+    .heart-burst{
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      width: 10px;
+      height: 10px;
+      background: var(--pixel);
+      clip-path: polygon(
+        50% 92%,
+        10% 55%,
+        10% 30%,
+        25% 18%,
+        40% 18%,
+        50% 30%,
+        60% 18%,
+        75% 18%,
+        90% 30%,
+        90% 55%
+      );
+      pointer-events: none;
+      transform: translate(-50%,-50%);
+      filter: drop-shadow(2px 2px 0 rgba(0,0,0,.12));
+      animation: burst-fly .7s steps(6, end) forwards;
+    }
+    @keyframes burst-fly{
+      0%{
+        opacity: 1;
+        transform: translate(-50%,-50%) scale(1);
+      }
+      100%{
+        opacity: 0;
+        transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(.7);
+      }
+    }
+
+    /* Confetti (pixel squares) */
+    .confetti{
+      position: fixed;
+      width: 8px;
+      height: 8px;
+      background: var(--pixel);
+      pointer-events:none;
+      animation: confetti-fall 1.2s steps(8, end) forwards;
+      filter: drop-shadow(2px 2px 0 rgba(0,0,0,.10));
+    }
+    @keyframes confetti-fall{
+      0%{ opacity: 1; transform: translateY(0) rotate(0deg) }
+      100%{ opacity: 0; transform: translateY(180px) rotate(90deg) }
+    }
+
+    @media (prefers-reduced-motion: reduce){
+      *{ transition:none !important; animation:none !important; }
+    }
+
+    
+  </style>
+</head>
+
+<body>
+  <div class="center">
+    <!-- Stage 1 -->
+    <div id="landing" class="landing" aria-live="polite">
+      <!-- Replace src with your own envelope gif file, e.g. envelope.gif -->
+      <button id="openBtn" class="envelope-gif-btn" type="button" aria-label="Open the envelope">
+        <img
+          class="envelope-gif"
+          src="https://media4.giphy.com/media/THyN0bLrC9QPAGa5yu/source.gif"
+          alt="Envelope gif" />
+      </button>
+      <p class="landing-text">Click the envelope</p>
+    </div>
+
+    <!-- Stage 2 -->
+    <div id="card" class="card" aria-live="polite">
+      <div class="pixel-window">
+        <div class="pixel-titlebar">
+          <div class="title-left">
+            <div>hi hehe<span class="title-cursor" aria-hidden="true"></span></div>
+          </div>
+          <div class="title-right">
+            <button id="closeBtn" class="px-close" aria-label="Close window">✕</button>
+          </div>
+        </div>
+
+        <div class="pixel-body">
+          <!-- ASK PHASE: first gif -->
+          <div id="phaseAsk">
+            <p class="question">Will you go out for a meal with me?</p>
+
+            <div class="gif-frame" aria-label="Cute gif (phase 1)">
+              <!-- Replace with your phase-1 gif -->
+              <img
+                id="askGif"
+                src="https://media.tenor.com/YmsXQkyR0x8AAAAj/shy-nervous.gif"
+                alt="Cute dancing" />
+            </div>
+
+            <div id="btnArea" class="btn-area">
+              <button id="yesBtn" class="px-action yes" type="button">YES</button>
+              <button id="noBtn" class="px-action no" type="button">NO</button>
+            </div>
+          </div>
+
+          <!-- FINAL PHASE: second gif + different layout -->
+          <div id="phaseYes" class="phase2">
+            <p class="yay-title">Yipppesee!</p>
+            <div class="mini-heart" aria-hidden="true"></div>
+
+            <div class="gif-frame final" aria-label="Final gif (phase 2)">
+              <!-- Replace with your phase-2 gif -->
+              <img
+                id="finalGif"
+                src="https://media.tenor.com/-ngVYrOUTXwAAAAj/penguin-happy.gif"
+                alt="Final cute gif" />
+            </div>
+
+            <!-- Edit this line to your own date plan -->
+            <p class="final-note">SUNDAY 7PM Dont be late !!</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <audio id="sndNo" preload="auto" src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_2c7e6f0a60.mp3?filename=click-124467.mp3"></audio>
+  <audio id="sndYes" preload="auto" src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_9ccbbf8b50.mp3?filename=success-1-6297.mp3"></audio>
+  <audio id="sndOpen" preload="auto" src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_0e1a36c8a8.mp3?filename=button-press-124476.mp3"></audio>
+
+  <script>
+    const landing = document.getElementById('landing');
+    const openBtn = document.getElementById('openBtn');
+
+    const card = document.getElementById('card');
+    const closeBtn = document.getElementById('closeBtn');
+
+    const phaseAsk = document.getElementById('phaseAsk');
+    const phaseYes = document.getElementById('phaseYes');
+
+    const yesBtn = document.getElementById('yesBtn');
+    const noBtn = document.getElementById('noBtn');
+    const btnArea = document.getElementById('btnArea');
+
+    const pixelWindow = document.querySelector('.pixel-window');
+
+    const sndNo = document.getElementById('sndNo');
+    const sndYes = document.getElementById('sndYes');
+    const sndOpen = document.getElementById('sndOpen');
+
+    const sadGifs = [
+      "https://media.tenor.com/YmsXQkyR0x8AAAAj/shy-nervous.gif",
+      "https://media.tenor.com/37jOSZZvjQUAAAAj/pengu-pudgy.gif",
+      "https://media.tenor.com/8DB9gYKzozUAAAAM/rain-raining.gif"
+    ];
+
+    const titleText = document.querySelector('.pixel-titlebar .title-left > div:first-child');
+
+
+        
+    let sadIndex = 0;
+    const askGif = document.getElementById('askGif');
+
+    const titleLines = [
+      "hi hehe",
+      "why ??",
+      "do you hate me :(",
+      "pls say yes",
+      "im gonna cry :("
+    ];
+
+    let titleIndex = 0;
+
+    
+    let noDetached = false;
+
+    function cycleTitleText(){
+      if(!titleText) return;
+      titleIndex = Math.min(titleIndex + 1, titleLines.length - 1);
+      titleText.textContent = titleLines[titleIndex];
+    }
+
+    function resetTitleText(){
+      titleIndex = 0;
+      if(titleText) titleText.textContent = titleLines[0];
+    }
+
+    function setTitleText(text){
+      if(!titleText) return;
+      titleText.textContent = text;
+    }
+
+    function cycleSadGif(){
+      if(!askGif) return;
+      sadIndex = Math.min(sadIndex + 1, sadGifs.length - 1);
+      askGif.src = sadGifs[sadIndex];
+    }
+
+    // reset gif when reopening / closing
+    function resetSadGif(){
+      sadIndex = 0;
+      if(askGif) askGif.src = sadGifs[0];
+    }
+
+
+
+    function openToCard(){
+      playSound(sndOpen);
+      landing.style.display = 'none';
+      card.classList.add('show');
+      resetToAsk();
+    }
+
+    function closeToLanding(){
+      // always go back to envelope
+      card.classList.remove('show');
+      landing.style.display = 'flex';
+
+      // reset phases (so it never becomes empty)
+      phaseAsk.classList.remove('hide');
+      phaseYes.classList.remove('show');
+
+      // reset NO back to normal side-by-side
+      noDetached = false;
+      noBtn.style.position = '';
+      noBtn.style.left = '';
+      noBtn.style.top = '';
+      noBtn.style.transform = '';
+      resetSadGif();
+      resetTitleText();
+    }
+
+    function resetToAsk(){
+      phaseAsk.classList.remove('hide');
+      phaseYes.classList.remove('show');
+
+      // also reset NO each time you open the card
+      noDetached = false;
+      noBtn.style.position = '';
+      noBtn.style.left = '';
+      noBtn.style.top = '';
+      noBtn.style.transform = '';
+      resetSadGif();
+      resetTitleText();
+    }
+
+    function clamp(n, min, max){
+      return Math.max(min, Math.min(max, n));
+    }
+
+
+
+    function moveNoButtonOnClick(){
+      const gifFrame = phaseAsk.querySelector('.gif-frame');
+      if(!gifFrame) return;
+
+      const rect = gifFrame.getBoundingClientRect();
+
+      const btnW = noBtn.offsetWidth;
+      const btnH = noBtn.offsetHeight;
+
+      const padding = 10;
+
+      const minX = rect.left + padding;
+      const maxX = rect.right - btnW - padding;
+      const minY = rect.top + padding;
+      const maxY = rect.bottom - btnH - padding;
+
+      const x = minX + Math.random() * Math.max(0, (maxX - minX));
+      const y = minY + Math.random() * Math.max(0, (maxY - minY));
+
+      noBtn.style.left = `${x}px`;
+      noBtn.style.top  = `${y}px`;
+    }
+
+    function goYes(){
+      playSound(sndYes);
+      burstHearts();
+
+      setTitleText("yay !!!!!");
+
+      phaseAsk.classList.add('hide');
+
+      setTimeout(() => {
+        phaseYes.classList.add('show');
+        confettiRain();
+      }, 120);
+    }
+
+
+    function playSound(el){
+      if(!el) return;
+      try{
+        el.currentTime = 0;
+        el.play();
+      }catch(_){}
+    }
+
+    function shakeWindow(){
+      if(!pixelWindow) return;
+      pixelWindow.classList.remove('shake');
+      void pixelWindow.offsetWidth;   // restart animation
+      pixelWindow.classList.add('shake');
+    }
+
+    function burstHearts(){
+      const frame = phaseAsk.querySelector('.gif-frame');
+      if(!frame) return;
+
+      const rect = frame.getBoundingClientRect();
+      const count = 10;
+
+      for(let i=0;i<count;i++){
+        const p = document.createElement('div');
+        p.className = 'heart-burst';
+
+        const dx = (Math.random() * 160 - 80).toFixed(0) + 'px';
+        const dy = (Math.random() * 140 - 90).toFixed(0) + 'px';
+        p.style.setProperty('--dx', dx);
+        p.style.setProperty('--dy', dy);
+
+        // position at center of gif-frame in viewport space
+        p.style.left = (rect.left + rect.width/2) + 'px';
+        p.style.top  = (rect.top + rect.height/2) + 'px';
+        p.style.position = 'fixed';
+
+        document.body.appendChild(p);
+        setTimeout(() => p.remove(), 800);
+      }
+    }
+
+    function confettiRain(){
+      // confetti around the popup window, short burst
+      const rect = pixelWindow.getBoundingClientRect();
+      const count = 28;
+
+      for(let i=0;i<count;i++){
+        const c = document.createElement('div');
+        c.className = 'confetti';
+
+        const x = rect.left + 12 + Math.random() * (rect.width - 24);
+        const y = rect.top + 12 + Math.random() * 40;
+
+        c.style.left = x + 'px';
+        c.style.top  = y + 'px';
+
+        document.body.appendChild(c);
+        setTimeout(() => c.remove(), 1400);
+      }
+    }
+
+
+    openBtn.addEventListener('click', openToCard);
+    closeBtn.addEventListener('click', closeToLanding);
+
+    yesBtn.addEventListener('click', goYes);
+
+    noBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+
+      if(!noDetached){
+        noDetached = true;
+        noBtn.style.position = 'fixed';
+        noBtn.style.transform = 'translate(0, 0)';
+      }
+
+      playSound(sndNo);
+      shakeWindow();
+
+      moveNoButtonOnClick();
+      cycleSadGif();
+      cycleTitleText();
+    });
+
+    document.addEventListener('keydown', (e) => {
+      // Enter opens envelope
+      if(!card.classList.contains('show') && (e.key === 'Enter' || e.key === ' ')){
+        e.preventDefault();
+        openToCard();
+        return;
+      }
+
+      // Esc always closes to envelope
+      if(e.key === 'Escape'){
+        closeToLanding();
+        return;
+      }
+
+      // Enter triggers YES when ask phase is visible
+      const askVisible = card.classList.contains('show') && !phaseAsk.classList.contains('hide');
+      if(askVisible && e.key === 'Enter'){
+        e.preventDefault();
+        goYes();
+      }
+    });
+
+
+  </script>
+</body>
+</html>
